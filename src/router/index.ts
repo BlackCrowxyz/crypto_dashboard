@@ -16,6 +16,11 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/detail/:coin_id',
+    name: 'coin-detail',
+    component: () => import('@/views/CoinDetail.vue'),
+  },
 ]
 
 const router = createRouter({
