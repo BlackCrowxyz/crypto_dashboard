@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container v-if="chartOptions?.series">
     <v-row>
       <v-col cols="12">
         current mode: {{ options.mode }}
@@ -10,7 +10,7 @@
     </v-row>
     <v-row>
       <v-col cols="12">
-        <highcharts v-if="chartOptions?.series" :options="chartOptions"></highcharts>
+        <highcharts :options="chartOptions"></highcharts>
       </v-col>
     </v-row>
   </v-container>
@@ -19,7 +19,6 @@
 <script setup lang="ts">
 import bitcoinCharts from "@/fakeData/bitcoinCharts";
 import { getChartOptions } from "@/helpers/highchartOptions";
-import HighchartsVue from "highcharts-vue";
 
 import { ref, onMounted, watch, reactive } from "vue";
 import { useRoute } from "vue-router";
@@ -49,8 +48,6 @@ async function getChart(coin_id: string, { vs_currency = "usd" } = {}) {
   //     `coins/${coin_id}/market_chart?vs_currency=${vs_currency}&days=${options.days}`
   //   );
   data.value = bitcoinCharts;
-  console.log(data.value);
-  console.log(options.mode);
   chartOptions.value = getChartOptions(data.value, options.mode);
 }
 
