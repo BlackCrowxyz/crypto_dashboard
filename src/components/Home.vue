@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height flex-column">
+  <v-container class="fill-height flex-column" fluid>
     <v-row class="width-100">
       <v-col> filter </v-col>
       <v-col>
@@ -20,76 +20,6 @@
         <v-btn @click="getCoinsListByNameOrSymbol">filter</v-btn>
       </v-col>
     </v-row>
-    <!-- <template v-if="coins?.data">
-      <v-row>
-        <v-col cols="12">
-          <v-table theme="dark">
-            <thead>
-              <tr>
-                <th class="text-left">#</th>
-                <th class="text-left">Coin</th>
-                <th class="text-left">Price</th>
-                <th class="text-left">24H</th>
-                <th class="text-left">24H %</th>
-                <th class="text-left">Volume</th>
-                <th class="text-left">Market Cap</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(coin, i) in coins.data" :key="coin.id">
-                <td>{{ i + 1 }}</td>
-                <td
-                  class="d-flex align-center text-body-1"
-                  @click="
-                    router.push({ name: 'coin-detail', params: { coin_id: coin.id } })
-                  "
-                >
-                  <img :src="coin.image" :alt="coin.name" height="24" width="24" />
-                  <span class="ml-3 mr-1 font-weight-bold">
-                    {{ coin.name }}
-                  </span>
-                  <small class="text-uppercase text-grey pt-1">
-                    {{ coin.symbol }}
-                  </small>
-                </td>
-                <td>${{ numberWithCommas(coin.current_price) }}</td>
-                <td
-                  :class="{
-                    'text-red': coin.price_change_24h < 0,
-                    'text-green': coin.price_change_24h > 0,
-                  }"
-                >
-                  <v-icon>
-                    {{ coin.price_change_24h < 0 ? "mdi-menu-down" : "mdi-menu-up" }}
-                  </v-icon>
-                  <span>
-                    {{ formatPriceChange(coin.price_change_24h, 3) }}
-                  </span>
-                </td>
-                <td
-                  :class="{
-                    'text-red': coin.price_change_24h < 0,
-                    'text-green': coin.price_change_24h > 0,
-                  }"
-                >
-                  %{{ formatPriceChange(coin.price_change_percentage_24h, 2) }}
-                </td>
-                <td>{{ numberWithCommas(coin.total_volume) }}</td>
-                <td>${{ numberWithCommas(coin.market_cap) }}</td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-col>
-      </v-row>
-    </template>
-    <template v-if="!coins?.data?.length">
-      <v-row>
-        <v-col cols="12">
-          <v-card class="text-center">No item to display</v-card>
-        </v-col>
-      </v-row>
-    </template> -->
-
     <v-row>
       <v-col cols="12">
         <data-handler :data="coins.data" :loading="coins.loading">
@@ -110,7 +40,7 @@
                 <tr v-for="(coin, i) in coins.data" :key="coin.id">
                   <td>{{ i + 1 }}</td>
                   <td
-                    class="d-flex align-center text-body-1"
+                    class="d-flex align-center text-body-1 pointer-click"
                     @click="
                       router.push({ name: 'coin-detail', params: { coin_id: coin.id } })
                     "
@@ -202,3 +132,9 @@ async function getCoinsListByNameOrSymbol({
   }
 }
 </script>
+
+<style>
+.pointer-click {
+  cursor: pointer;
+}
+</style>

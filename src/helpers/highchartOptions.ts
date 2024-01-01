@@ -11,7 +11,7 @@ export const getChartOptions = (data: PriceDataItem, name: "prices" | "market_ca
         backgroundColor: "#f3f3f3", // Background color of the chart
     },
     title: {
-        text: "Price and Volume Chart",
+        text: "",
         align: "left",
         style: {
             color: "#333333",
@@ -34,20 +34,20 @@ export const getChartOptions = (data: PriceDataItem, name: "prices" | "market_ca
                     color: "green",
                 },
             },
-            title: {
-                text: "Price",
-                style: {
-                    color: "yellow",
-                },
-            },
+            // title: {
+            //     text: "Price",
+            //     style: {
+            //         color: "yellow",
+            //     },
+            // },
             opposite: true, // This will put the Price yAxis on the right side
         },
         {
             // Secondary yAxis for volume
             title: {
-                text: "Volume",
+                text: "Value",
                 style: {
-                    color: "red",
+                    color: "primary",
                 },
             },
             labels: {
