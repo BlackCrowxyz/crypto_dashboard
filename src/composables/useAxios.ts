@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import axios from 'axios';
-import { errorState } from '@/composables/errorState';
+import { errorState } from '@/states/errorState';
 
 const BaseUrl = import.meta.env.VITE_BASEURL;
 
