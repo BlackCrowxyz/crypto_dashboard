@@ -135,15 +135,12 @@ async function getChart(coin_id: string, { vs_currency = "usd" } = {}) {
   // TODO: uncomment this for production
   detail.value = await apis.getChart({ coin_id, days: options.days, vs_currency });
   // detail.value = bitcoinCharts;
-  console.log(detail.value);
   chartOptions.value = getChartOptions(detail.value, options.mode);
 }
 
 const coinDetail = ref(null);
 async function getCoinDetail(coin_id: string, { vs_currency = "usd" } = {}) {
   // TODO: uncomment this for production
-  // coinDetail.value = await get(`coins/${coin_id}`);
-
   coinDetail.value = await apis.getCoinDetail(coin_id);
   // coinDetail.value = mantle;
 }
