@@ -8,3 +8,8 @@ export const formatPriceChange = (priceChange: number, after: number = 2) => {
         return priceChange.toString();
     }
 };
+
+export const getPriceChangeClass = (priceChange) => ({
+    "text-red": priceChange < 0,
+    "text-green": priceChange > 0,
+});

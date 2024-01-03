@@ -1,11 +1,12 @@
 <template>
   <v-container v-if="chartOptions?.series" fluid>
-    <v-row v-if="coinDetail?.data">
+    <v-row v-if="coinDetail">
       <v-col cols="12">
         <div class="d-flex align-center">
-          <img :src="coinDetail.data.image.thumb" class="pr-2" />
+          <v-btn icon="mdi-arrow-left" to="Home" class="mr-3"></v-btn>
+          <img :src="coinDetail.image.thumb" class="pr-2" />
           <span class="font-weight-bold text-subtitle-1">
-            {{ coinDetail.data.name }} Price chart ({{ coinDetail.data.symbol }})
+            {{ coinDetail.name }} Price chart ({{ coinDetail.symbol }})
           </span>
         </div>
       </v-col>
@@ -23,9 +24,9 @@
       <v-col cols="12" md="8">
         <highcharts class="rounded-lg" :options="chartOptions"></highcharts>
 
-        <div class="mt-4">
+        <div class="mt-4" v-if="coinDetail">
           <v-table class="text-center rounded-lg">
-            <tr class="bg-blue-lighten-3">
+            <tr class="bg-blue-darken-3">
               <th>Range</th>
               <th class="pa-2">1h</th>
               <th>24h</th>
@@ -34,14 +35,14 @@
               <th>30d</th>
               <th>1y</th>
             </tr>
-            <tr class="bg-blue-lighten-5">
+            <tr class="bg-blue-darken-5">
               <td class="pa-2">Change</td>
               <td
                 v-for="timePeriod in ['1h', '24h', '7d', '14d', '30d', '1y']"
                 :key="timePeriod"
                 :class="
                   getPriceChangeClass(
-                    coinDetail.data.market_data[
+                    coinDetail.market_data[
                       `price_change_percentage_${timePeriod}_in_currency`
                     ].usd
                   )
@@ -49,57 +50,40 @@
               >
                 {{
                   formatPriceChange(
-                    coinDetail.data.market_data[
+                    coinDetail.market_data[
                       `price_change_percentage_${timePeriod}_in_currency`
                     ].usd
                   )
                 }}%
               </td>
-              <!-- <td
-              :class="{
-                      'text-red': coinDetail.data.market_data.price_change_percentage_1h_in_currency.usd < 0,
-                      'text-green': coinDetail.data.market_data.price_change_percentage_1h_in_currency.usd > 0,
-                    }"
-              >{{formatPriceChange(coinDetail.data.market_data.price_change_percentage_1h_in_currency.usd)}}%</td>
-              <td
-              :class="{
-                      'text-red': coinDetail.data.market_data.price_change_percentage_24h_in_currency.usd < 0,
-                      'text-green': coinDetail.data.market_data.price_change_percentage_24h_in_currency.usd > 0,
-                    }"
-              >{{formatPriceChange(coinDetail.data.market_data.price_change_percentage_24h_in_currency.usd)}}%</td>
-              <td>{{formatPriceChange(coinDetail.data.market_data.price_change_percentage_7d_in_currency.usd)}}%</td>
-              <td>{{formatPriceChange(coinDetail.data.market_data.price_change_percentage_14d_in_currency.usd)}}%</td>
-              <td>{{formatPriceChange(coinDetail.data.market_data.price_change_percentage_30d_in_currency.usd)}}%</td>
-              <td>{{formatPriceChange(coinDetail.data.market_data.price_change_percentage_1y_in_currency.usd)}}%</td> -->
             </tr>
           </v-table>
         </div>
       </v-col>
-      <v-col cols="12" md="4">
-        <v-card color="primary" variant="outlined">
-          <v-card-title> {{ coinDetail.data.name }} Price Statistics </v-card-title>
+      <v-col cols="12" md="4" v-if="coinDetail">
+        <v-card color="#212121" rounded="lg">
+          <v-card-title> {{ coinDetail.name }} Price Statistics </v-card-title>
           <v-card-text>
             <statistic-row>
               <span> Market Cap Rank </span>
-              <span> #{{ coinDetail.data.market_cap_rank }} </span>
+              <span> #{{ coinDetail.market_cap_rank }} </span>
             </statistic-row>
             <statistic-row>
-              <span> {{ coinDetail.data.name }} Current price </span>
-              <span>
-                ${{ coinDetail.data.market_data.current_price.usd }}
-              </span>
+              <span> {{ coinDetail.name }} Current price </span>
+              <span> ${{ coinDetail.market_data.current_price.usd }} </span>
             </statistic-row>
             <statistic-row>
               <span> 24h Low / 24h High </span>
               <span>
-                ${{ coinDetail.data.market_data.low_24h.usd }} /
-                ${{ coinDetail.data.market_data.high_24h.usd }}
+                ${{ coinDetail.market_data.low_24h.usd }} / ${{
+                  coinDetail.market_data.high_24h.usd
+                }}
               </span>
             </statistic-row>
             <statistic-row>
               <span> Market Cap </span>
               <span>
-                ${{ numberWithCommas(coinDetail.data.market_data.market_cap.usd) }}
+                ${{ numberWithCommas(coinDetail.market_data.market_cap.usd) }}
               </span>
             </statistic-row>
           </v-card-text>
@@ -113,12 +97,17 @@
 import bitcoinCharts from "@/fakeData/bitcoinCharts";
 import mantle from "@/fakeData/mantle";
 import StatisticRow from "@/components/DetailPage/StatisticRow.vue";
-import { numberWithCommas, formatPriceChange } from "@/helpers/index";
+import {
+  numberWithCommas,
+  formatPriceChange,
+  getPriceChangeClass,
+} from "@/helpers/index";
 import { getChartOptions } from "@/helpers/highchartOptions";
 
 import { ref, onMounted, watch, reactive, computed } from "vue";
 import { useRoute } from "vue-router";
 import useAxios from "@/composables/useAxios";
+import { apis } from "@/endPoints/apis";
 const { get } = useAxios();
 
 const route = useRoute();
@@ -131,48 +120,35 @@ const options = reactive({
 });
 
 onMounted(async () => {
+  loading.value = true;
   coin_id.value = route.params.coin_id;
   getChart(coin_id.value);
   getCoinDetail(coin_id.value);
+  loading.value = false;
 });
 
-const detail = ref({
-  data: null,
-  loading: false,
-});
+const loading = ref(false);
+const detail = ref(null);
 const chartOptions = ref(null);
 
 async function getChart(coin_id: string, { vs_currency = "usd" } = {}) {
-  detail.value.loading = true;
   // TODO: uncomment this for production
-  // detail.value = await get(
-  //   `coins/${coin_id}/market_chart?vs_currency=${vs_currency}&days=${options.days}`
-  // );
-  detail.value.data = bitcoinCharts;
-  chartOptions.value = getChartOptions(detail.value.data, options.mode);
-  detail.value.loading = false;
+  detail.value = await apis.getChart({ coin_id, days: options.days, vs_currency });
+  // detail.value = bitcoinCharts;
+  console.log(detail.value);
+  chartOptions.value = getChartOptions(detail.value, options.mode);
 }
 
-const coinDetail = ref({
-  data: null,
-  loading: false,
-});
+const coinDetail = ref(null);
 async function getCoinDetail(coin_id: string, { vs_currency = "usd" } = {}) {
-  coinDetail.value.loading = true;
   // TODO: uncomment this for production
   // coinDetail.value = await get(`coins/${coin_id}`);
-  coinDetail.value.data = mantle;
-  coinDetail.value.loading = false;
+
+  coinDetail.value = await apis.getCoinDetail(coin_id);
+  // coinDetail.value = mantle;
 }
 
 watch(options, (newValue, oldValue) => {
-  chartOptions.value = getChartOptions(detail.value.data, newValue.mode);
-});
-
-///////////////////////////
-
-const getPriceChangeClass = (priceChange) => ({
-  "text-red": priceChange < 0,
-  "text-green": priceChange > 0,
+  chartOptions.value = getChartOptions(detail.value, newValue.mode);
 });
 </script>

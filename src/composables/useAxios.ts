@@ -4,52 +4,35 @@ import { errorState } from '@/states/errorState';
 
 const BaseUrl = import.meta.env.VITE_BASEURL;
 
+function getUrl(url: string) {
+    return `${BaseUrl}/${url}`
+}
+
 export default function useAxios() {
 
-    // Function to create state refs for each request
-    function createState() {
-        const data = ref(null);
-        const loading = ref(false);
-        // We no longer hold error in the local state
-        return { data, loading };
-    }
+    const data = ref(null);
 
-    // Function to perform GET requests
-    async function get(url, config = {}) {
-        const { data, loading } = createState();
-        loading.value = true;
-
+    async function get(url: string, config = {}) {
         try {
-            const response = await axios.get(`${BaseUrl}/${url}`, config);
+            const response = await axios.get(getUrl(url), config);
             data.value = response.data;
         } catch (e) {
-            console.error(e); // Log error
-            errorState.showError(e.message); // Use showError from useError
-        } finally {
-            loading.value = false;
+            console.error(e);
+            errorState.showError(e.message);
         }
-        // Return data and loading states only
-        return { data, loading };
+        return data.value
     }
 
-    // Function to perform POST requests
-    async function post(url, payload, config = {}) {
-        const { data, loading } = createState();
-        loading.value = true;
-
+    async function post(url: string, payload: object, config = {}) {
         try {
-            const response = await axios.post(`${BaseUrl}/${url}`, payload, config);
+            const response = await axios.post(getUrl(url), payload, config);
             data.value = response.data;
         } catch (e) {
-            console.error(e); // Log error
-            errorState.showError(e.message); // Use showError from useError
-        } finally {
-            loading.value = false;
+            console.error(e);
+            errorState.showError(e.message);
         }
-        // Return data and loading states only
-        return { data, loading };
+        return data.value
     }
 
-    // You don't need to expose showError or clearError here as they will be used only internally
     return { get, post };
 }

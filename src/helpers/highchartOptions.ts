@@ -1,3 +1,5 @@
+import { numberWithCommas } from "@/helpers/index"
+
 interface PriceDataItem {
     // timestamp, value
     prices: [number, number][];
@@ -5,81 +7,63 @@ interface PriceDataItem {
     total_volumes: [number, number][];
 }
 
+function getName(name: string) {
+    if (name == 'prices') return "Prices"
+    else if (name == 'market_caps') return "Market Caps"
+    else if (name == 'total_volumes') return "Total Volumes"
+}
+
 export const getChartOptions = (data: PriceDataItem, name: "prices" | "market_caps" | "total_volumes") => ({
     chart: {
         zoomType: "xy", // Enables zooming along both axes
-        backgroundColor: "#f3f3f3", // Background color of the chart
+        backgroundColor: "#212121", // Background color of the chart
     },
     title: {
-        text: "",
+        text: getName(name),
         align: "left",
         style: {
-            color: "#333333",
+            color: "white",
             fontWeight: "bold",
-            fontSize: "16px",
+            fontSize: "18px",
         },
     },
     xAxis: [
         {
             type: "datetime",
             crosshair: true, // Enables a crosshair for following the points along the axis
+            labels: {
+                style: {
+                    color: "white",
+                },
+            },
         },
     ],
     yAxis: [
         {
             // Primary yAxis for price
             labels: {
-                format: "${value}",
+                formatter: function () {
+                    return '$' + numberWithCommas(this.value);
+                },
                 style: {
-                    color: "green",
+                    color: "white",
                 },
             },
-            // title: {
-            //     text: "Price",
-            //     style: {
-            //         color: "yellow",
-            //     },
-            // },
-            opposite: true, // This will put the Price yAxis on the right side
-        },
-        {
-            // Secondary yAxis for volume
-            title: {
-                text: "Value",
-                style: {
-                    color: "primary",
-                },
-            },
-            labels: {
-                format: "{value} units",
-                style: {
-                    color: "blue",
-                },
-            },
-            opposite: false, // This will put the Volume yAxis on the left side
-        },
+            opposite: true
+        }
     ],
     tooltip: {
         shared: true,
     },
     series: [
-        // {
-        //   name: "Volume",
-        //   type: "column", // This will create bars
-        //   data: fakeChart.map((point, i) => [i, point[0]]), // Assuming volume is the third value in your array
-        //   yAxis: 1,
-        //   tooltip: {
-        //     valueSuffix: " units",
-        //   },
-        // },
         {
             name: name,
             type: "spline", // For a smooth line chart
-            // data: fakeChart.map(([time, price]) => [time, price]),
+            color: '#cccccc',
             data: data[name].map(([time, price]) => [time, price]),
             yAxis: 0,
             tooltip: {
-                valueSuffix: " $",
+                valuePrefix: " $ ",
             },
             marker: {
                 enabled: false,

@@ -1,12 +1,15 @@
 <template>
   <v-container class="fill-height flex-column" fluid>
-    <v-row class="width-100">
-      <v-col> filter </v-col>
+    <v-row class="full-width align-center">
+      <v-col>
+        <span class="text-h6"> Filter </span>
+      </v-col>
       <v-col>
         <v-text-field
           variant="outlined"
           label="Name"
           v-model.name="search.name"
+          hide-details
         ></v-text-field>
       </v-col>
       <v-col>
@@ -14,19 +17,23 @@
           variant="outlined"
           label="Symbol"
           v-model.name="search.symbol"
+          hide-details
         ></v-text-field>
       </v-col>
-      <v-col>
-        <v-btn @click="getCoinsListByNameOrSymbol">filter</v-btn>
-      </v-col>
     </v-row>
-    <v-row>
+    <v-row class="full-width">
       <v-col cols="12">
-        <data-handler :data="coins.data" :loading="coins.loading">
+        <data-handler :data="filteredCoins" :loading="loading">
           <template #default>
-            <v-table theme="dark">
+            <v-table
+              theme=""
+              class="rounded-lg"
+              fixed-header
+              hover
+              height="calc(100vh - 180px)"
+            >
               <thead>
-                <tr>
+                <tr class="text-h6">
                   <th class="text-left">#</th>
                   <th class="text-left">Coin</th>
                   <th class="text-left">Price</th>
@@ -37,7 +44,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(coin, i) in coins.data" :key="coin.id">
+                <tr v-for="(coin, i) in filteredCoins" :key="coin.id">
                   <td>{{ i + 1 }}</td>
                   <td
                     class="d-flex align-center text-body-1 pointer-click"
@@ -54,12 +61,7 @@
                     </small>
                   </td>
                   <td>${{ numberWithCommas(coin.current_price) }}</td>
-                  <td
-                    :class="{
-                      'text-red': coin.price_change_24h < 0,
-                      'text-green': coin.price_change_24h > 0,
-                    }"
-                  >
+                  <td :class="getPriceChangeClass(coin.price_change_24h)">
                     <v-icon>
                       {{ coin.price_change_24h < 0 ? "mdi-menu-down" : "mdi-menu-up" }}
                     </v-icon>
@@ -67,12 +69,7 @@
                       {{ formatPriceChange(coin.price_change_24h, 3) }}
                     </span>
                   </td>
-                  <td
-                    :class="{
-                      'text-red': coin.price_change_24h < 0,
-                      'text-green': coin.price_change_24h > 0,
-                    }"
-                  >
+                  <td :class="getPriceChangeClass(coin.price_change_24h)">
                     %{{ formatPriceChange(coin.price_change_percentage_24h, 2) }}
                   </td>
                   <td>{{ numberWithCommas(coin.total_volume) }}</td>
@@ -90,28 +87,36 @@
 <script lang="ts" setup>
 import coinsList from "@/fakeData/coinsList";
 import DataHandler from "@/components/Main/DataHandler.vue";
-import { numberWithCommas, formatPriceChange } from "@/helpers/index";
-// import { apis } from "@/endPoints/apis";
-import { ref, reactive, onMounted } from "vue";
+import {
+  numberWithCommas,
+  formatPriceChange,
+  getPriceChangeClass,
+} from "@/helpers/index";
+import { apis } from "@/endPoints/apis";
+import { ref, reactive, onMounted, watch } from "vue";
 import router from "@/router";
-import useAxios from "@/composables/useAxios";
-const { get, post } = useAxios();
 
 onMounted(async () => {
   await getCoinsList();
 });
 
-const coins = ref({ data: null, loading: false });
+const loading = ref(false);
+
+const coins = ref(null);
+const filteredCoins = ref(null);
 
 async function getCoinsList({ vs_currency = "usd" } = {}) {
-  coins.value.loading = true;
+  loading.value = true;
   // TODO: uncomment for production
-  // coins.value = await get(`coins/markets?vs_currency=${vs_currency}`);
-  coins.value.data = coinsList;
-  coins.value.loading = false;
+  // coins.value = await apis.getCoinsList(vs_currency);
+  coins.value = coinsList;
+  filteredCoins.value = coins.value;
+  loading.value = false;
 }
 
 const search = reactive({ name: null, symbol: null });
+
+watch(search, async () => await getCoinsListByNameOrSymbol());
 
 async function getCoinsListByNameOrSymbol({
   vs_currency = "usd",
@@ -119,22 +124,35 @@ async function getCoinsListByNameOrSymbol({
   per_page = 100,
   page = 1,
   sparkline = false,
-}) {
-  // Filter with name by api
+} = {}) {
+  let byName = [],
+    bySymbol = [];
+  loading.value = true;
+  // Search with name
   if (search.name) {
-    // const idsJoined = search.name.join("%2C");
-    const queryString = `vs_currency=${vs_currency}&ids=${search.name}&order=${order}&per_page=${per_page}&page=${page}&sparkline=${sparkline}&locale=en`;
-    coins.value = await get(`coins/markets?${queryString}`);
-  } else if (search.symbol) {
-    const queryString = `vs_currency=${vs_currency}&order=${order}&per_page=${per_page}&page=${page}&sparkline=${sparkline}&locale=en`;
-    coins.value = await get(`coins/markets?${queryString}`);
-    // TODO: Filter by javascript filter (symbol)
+    byName = coins.value.filter((c) => {
+      return c.name.toLowerCase().includes(search.name.toLowerCase());
+    });
   }
+  // Search with symbol
+  if (search.symbol) {
+    bySymbol = coins.value.filter((c) => {
+      return c.symbol.toLowerCase().includes(search.symbol.toLowerCase());
+    });
+  }
+  // combining the search result
+  filteredCoins.value = [...byName, ...bySymbol];
+  // removing duplicate items
+  filteredCoins.value = [...new Set(filteredCoins.value)];
+  loading.value = false;
 }
 </script>
 
 <style>
 .pointer-click {
   cursor: pointer;
+}
+.full-width {
+  width: 100%;
 }
 </style>
