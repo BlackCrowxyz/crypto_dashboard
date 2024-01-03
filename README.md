@@ -1,5 +1,9 @@
 # Crypto dashboard
 
+![Alt text](image.png)
+
+
+![Alt text](image-1.png)
 ## Overview
 This project is a Vue 3 application utilizing the Composition API with `<script setup>` syntax. The structure is organized to facilitate modularity and separation of concerns, making use of components, composables, endpoints, plugins, and other Vue-specific design conventions.
 
