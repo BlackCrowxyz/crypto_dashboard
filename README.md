@@ -44,6 +44,12 @@ To start using this project, clone the repo and install the dependencies:
 pnpm install
 ```
 
+## Create `.env` file and put the following base api in it.
+
+```
+VITE_BASEURL=https://api.coingecko.com/api/v3
+```
+
 ### Compiles and hot-reloads for development
 
 ```
